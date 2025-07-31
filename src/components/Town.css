@@ -1,0 +1,65 @@
+.town-container {
+	position: relative;
+	width: 800px;
+	height: 600px;
+	background: linear-gradient(135deg, #87ceeb 0%, #98fb98 100%);
+	border: 2px solid #8b4513;
+	margin: 20px auto;
+	overflow: hidden;
+}
+
+.character-sprite {
+	position: absolute;
+	width: 64px; /* Aumentado de 48px */
+	height: 64px; /* Aumentado de 48px */
+	cursor: pointer;
+	transition: transform 0.1s ease-in-out;
+	image-rendering: pixelated; /* For crisp pixel art */
+	object-fit: contain;
+}
+
+.character-sprite:hover {
+	filter: brightness(1.2);
+}
+
+.character-sprite.walk {
+	animation: walk-bounce 0.4s ease-in-out infinite alternate;
+}
+
+.character-sprite.special {
+	animation: special-glow 1s ease-in-out;
+}
+
+.character-sprite.idle {
+	animation: idle-sway 2s ease-in-out infinite alternate;
+}
+
+@keyframes walk-bounce {
+	0% {
+		transform: translateY(0px) scale(1);
+	}
+	100% {
+		transform: translateY(-3px) scale(1.05);
+	}
+}
+
+@keyframes special-glow {
+	0%,
+	100% {
+		filter: brightness(1) drop-shadow(0 0 0px transparent);
+	}
+	50% {
+		filter: brightness(1.8) drop-shadow(0 0 15px #ffd700);
+		transform: scale(1.1);
+	}
+}
+
+@keyframes idle-sway {
+	0%,
+	100% {
+		transform: translateX(0px);
+	}
+	50% {
+		transform: translateX(1px);
+	}
+}
