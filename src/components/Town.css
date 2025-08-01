@@ -6,7 +6,7 @@
 	position: relative;
 	overflow: hidden;
 	background-color: #487346;
-	background-image: url('../fondos/fondo1.png'); /* Ajusta la ruta si es necesario */
+	background-image: url('../fondos/fondo.png'); /* Ajusta la ruta si es necesario */
 	background-size: cover;
 	background-position: center;
 }
