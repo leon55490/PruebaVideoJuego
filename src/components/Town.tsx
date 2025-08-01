@@ -1150,17 +1150,13 @@ const Town: React.FC = () => {
 						};
 					}
 
-					// Skip automatic interactions during player conversations
-					if (!activeInteraction || playerConversation?.isActive) {
-						return {
-							...char,
-							isMoving: false,
-							animationFrame: 0,
-							activityState: 'idle' as ActivityState,
-						};
-					}
-
-					// ...rest of existing player character logic for automatic interactions...
+					// Si no hay playerTarget, NO hacer nada automático:
+					return {
+						...char,
+						isMoving: false,
+						animationFrame: 0,
+						activityState: 'idle' as ActivityState,
+					};
 				}
 
 				// Handle AI characters - skip automatic interactions if in player conversation
@@ -1644,8 +1640,12 @@ const Town: React.FC = () => {
 			<div
 				id="history-panel"
 				style={{
-					width: '400px', // Increased width for better chat experience
-					height: '700px', // Increased height
+					width: '400px',
+					height:
+						playerConversation?.isActive &&
+						playerConversation.targetCharacter.id === selectedCharacter?.id
+							? '950px' // más alto cuando hay conversación activa
+							: '700px', // altura normal
 					backgroundColor: '#ffffff',
 					border: '2px solid #e0e0e0',
 					borderRadius: '12px',
@@ -1759,31 +1759,80 @@ const Town: React.FC = () => {
 								</p>
 							</div>
 
+							{/* Task Progress and List for non-player characters */}
 							{!selectedCharacter.isPlayerControlled && (
-								<div
-									style={{
-										marginTop: '10px',
-										padding: '8px 12px',
-										backgroundColor: '#fff3cd',
-										borderRadius: '6px',
-										border: '1px solid #ffeaa7',
-									}}
-								>
-									<strong style={{ fontSize: '13px', color: '#2c3e50' }}>
-										Task Progress:
-									</strong>
-									<span style={{ marginLeft: '8px', color: '#6c757d', fontSize: '13px' }}>
-										{selectedCharacter.dailyGoals.filter((goal) => goal.completed).length}
-										/{selectedCharacter.dailyGoals.length}
-									</span>
-								</div>
+								<>
+									<div
+										style={{
+											marginTop: '10px',
+											padding: '8px 12px',
+											backgroundColor: '#fff3cd',
+											borderRadius: '6px',
+											border: '1px solid #ffeaa7',
+										}}
+									>
+										<strong style={{ fontSize: '13px', color: '#2c3e50' }}>
+											Task Progress:
+										</strong>
+										<span
+											style={{ marginLeft: '8px', color: '#6c757d', fontSize: '13px' }}
+										>
+											{
+												selectedCharacter.dailyGoals.filter((goal) => goal.completed)
+													.length
+											}
+											/{selectedCharacter.dailyGoals.length}
+										</span>
+									</div>
+									{/* Lista de tareas */}
+									<div
+										style={{
+											marginTop: '8px',
+											padding: '8px 12px',
+											backgroundColor: '#f8f9fa',
+											borderRadius: '6px',
+											border: '1px solid #e0e0e0',
+											maxHeight: '120px',
+											overflowY: 'auto',
+										}}
+									>
+										<strong style={{ fontSize: '13px', color: '#2c3e50' }}>Tasks:</strong>
+										<ul
+											style={{
+												paddingLeft: '18px',
+												margin: '8px 0 0 0',
+												fontSize: '13px',
+											}}
+										>
+											{selectedCharacter.dailyGoals.map((goal, idx) => (
+												<li
+													key={idx}
+													style={{
+														color: goal.completed ? '#4CAF50' : '#888',
+														textDecoration: goal.completed ? 'line-through' : 'none',
+														marginBottom: '2px',
+													}}
+												>
+													{goal.task}
+												</li>
+											))}
+										</ul>
+									</div>
+								</>
 							)}
 						</div>
 
 						{/* Chat/Conversation Section */}
 						{playerConversation?.isActive &&
 						playerConversation.targetCharacter.id === selectedCharacter.id ? (
-							<div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+							<div
+								style={{
+									flex: 1,
+									display: 'flex',
+									flexDirection: 'column',
+									minHeight: 0,
+								}}
+							>
 								{/* Active Chat Header */}
 								<div
 									style={{
@@ -1834,51 +1883,51 @@ const Town: React.FC = () => {
 										maxHeight: 'none',
 									}}
 								>
-									{selectedCharacter.conversationHistory
-										.slice(-6)
-										.map((entry, index) => (
+									{selectedCharacter.conversationHistory.slice(-6).map((entry, index) => (
+										<div
+											key={index}
+											style={{
+												marginBottom: '12px',
+												display: 'flex',
+												flexDirection: entry.speaker === 'Prota' ? 'row-reverse' : 'row',
+												alignItems: 'flex-start',
+												gap: '8px',
+											}}
+										>
 											<div
-												key={index}
 												style={{
-													marginBottom: '12px',
+													minWidth: '24px',
+													height: '24px',
+													borderRadius: '50%',
+													backgroundColor:
+														entry.speaker === 'Prota' ? '#FF6B6B' : '#4CAF50',
 													display: 'flex',
-													flexDirection: entry.speaker === 'Prota' ? 'row-reverse' : 'row',
-													alignItems: 'flex-start',
-													gap: '8px',
+													alignItems: 'center',
+													justifyContent: 'center',
+													fontSize: '10px',
+													color: 'white',
+													fontWeight: 'bold',
 												}}
 											>
-												<div
-													style={{
-														minWidth: '24px',
-														height: '24px',
-														borderRadius: '50%',
-														backgroundColor: entry.speaker === 'Prota' ? '#FF6B6B' : '#4CAF50',
-														display: 'flex',
-														alignItems: 'center',
-														justifyContent: 'center',
-														fontSize: '10px',
-														color: 'white',
-														fontWeight: 'bold',
-													}}
-												>
-													{entry.speaker.charAt(0)}
-												</div>
-												<div
-													style={{
-														maxWidth: '70%',
-														padding: '10px 12px',
-														borderRadius: '12px',
-														backgroundColor: entry.speaker === 'Prota' ? '#FF6B6B' : '#4CAF50',
-														color: 'white',
-														fontSize: '13px',
-														lineHeight: '1.4',
-														wordWrap: 'break-word',
-													}}
-												>
-													{entry.message}
-												</div>
+												{entry.speaker.charAt(0)}
 											</div>
-										))}
+											<div
+												style={{
+													maxWidth: '70%',
+													padding: '10px 12px',
+													borderRadius: '12px',
+													backgroundColor:
+														entry.speaker === 'Prota' ? '#FF6B6B' : '#4CAF50',
+													color: 'white',
+													fontSize: '13px',
+													lineHeight: '1.4',
+													wordWrap: 'break-word',
+												}}
+											>
+												{entry.message}
+											</div>
+										</div>
+									))}
 								</div>
 
 								{/* Chat Input Area */}
@@ -1984,7 +2033,8 @@ const Town: React.FC = () => {
 									Conversation History
 								</h4>
 
-								{selectedCharacter.conversationHistory.length > 0 ? (
+								{selectedCharacter.conversationHistory &&
+								selectedCharacter.conversationHistory.length > 0 ? (
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 										{selectedCharacter.conversationHistory.map((entry, index) => (
 											<div
@@ -2068,7 +2118,10 @@ const Town: React.FC = () => {
 								margin: 0,
 							}}
 						>
-							<span role="img" aria-label="tip">💡</span> Tip: Click anywhere on the map to move Prota!
+							<span role="img" aria-label="tip">
+								💡
+							</span>{' '}
+							Tip: Click anywhere on the map to move Prota!
 						</div>
 					</div>
 				)}
