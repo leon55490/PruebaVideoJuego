@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Character, CharacterSprites, Direction, Goal } from '../types/Character';
 import './Town.css';
@@ -13,6 +14,7 @@ const GOAL_REACH_THRESHOLD = 5;
 const TASK_DURATION = 5000;
 const EXPLORATION_DURATION = 3000;
 const EXPLORATION_RADIUS = 40;
+const TASK_REGENERATION_PAUSE = 5000; // 5-second pause before regenerating tasks
 
 const GITHUB_RAW_BASE_URL =
 	'https://raw.githubusercontent.com/leon55490/PruebaVideoJuego/main/src/personajes/';
@@ -336,7 +338,7 @@ const characterDefinitions = [
 ];
 
 // Character activity states
-type ActivityState = 'moving' | 'working' | 'exploring' | 'idle';
+type ActivityState = 'moving' | 'working' | 'exploring' | 'idle' | 'regenerating_tasks';
 
 // Extended interface for conversation history entry
 interface ConversationEntry {
@@ -1271,6 +1273,26 @@ const Town: React.FC = () => {
 							};
 						}
 						break;
+					
+					case 'regenerating_tasks':
+						if (char.taskStartTime && now - char.taskStartTime >= TASK_REGENERATION_PAUSE) {
+							const definition = characterDefinitions.find(d => d.id === char.id);
+							if (definition) {
+                                const explorationTasks = generateExplorationTasks();
+                                const allTasks = [...definition.baseTasks, ...explorationTasks];
+								const shuffledTasks = shuffleArray(allTasks);
+								
+								return {
+									...char,
+									dailyGoals: shuffledTasks.map(task => ({ ...task, completed: false })),
+									currentGoalIndex: 0,
+									activityState: 'moving' as ActivityState,
+									taskStartTime: undefined,
+								};
+							}
+						}
+						return { ...char, isMoving: false, animationFrame: 0 };
+
 
 					case 'moving':
 					default:
@@ -1330,7 +1352,8 @@ const Town: React.FC = () => {
 								...char,
 								isMoving: false,
 								animationFrame: 0,
-								activityState: 'idle' as ActivityState,
+								activityState: 'regenerating_tasks' as ActivityState,
+								taskStartTime: now,
 							};
 						}
 
